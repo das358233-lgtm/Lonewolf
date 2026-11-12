@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Personal Expense Tracker</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    padding: 25px;
+  }
+  .container {
+    max-width: 450px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px #ddd;
+  }
+  h1 { text-align: center; }
+  input, select, button {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    box-sizing: border-box;
+  }
+  button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .summary {
+    background: #e0f2fe;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    text-align: center;
+  }
+  li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Expense Tracker</h1>
+  <p>Track your daily spending easily.</p>
+
+  <label for="amount">Expense Amount (₹)</label>
+  <input id="amount" type="number"
+    min="0.01" step="0.01"
+    placeholder="Enter amount">
+
+  <label for="category">Category</label>
+  <select id="category">
+    <option>Food</option>
+    <option>Travel</option>
+    <option>Shopping</option>
+    <option>Education</option>
+    <option>Other</option>
+  </select>
+
+  <button onclick="addExpense()">Add Expense</button>
+
+  <div class="summary">
+    <h2>Total Spent</h2>
+    <h2 id="total">₹0.00</h2>
+  </div>
+
+  <h3>Expense History</h3>
+  <ul id="history"></ul>
+</div>
+
+<script>
+const storageKey = "personal-expenses";
+let expenses;
+
+try {
+  const saved = JSON.parse(localStorage.getItem(storageKey));
+  expenses = Array.isArray(saved) ? saved : [];
+} catch {
+  expenses = [];
+}
+
+function addExpense() {
+  const input = document.getElementById("amount");
+  const amount = Number(input.value);
+  const category =
+    document.getElementById("category").value;
+
+  if (input.value.trim() === "" ||
+      !Number.isFinite(amount) || amount <= 0) {
+    alert("Please enter a valid positive amount.");
+    return;
+  }
+
+  expenses.push({
+    amount: Math.round(amount * 100) / 100,
+    category: category
+  });
+
+  try {
+    localStorage.setItem(
+      storageKey, JSON.stringify(expenses)
+    );
+  } catch {
+    alert("Expense added, but browser storage is unavailable.");
+  }
+
+  input.value = "";
+  showExpenses();
+}
+
+function showExpenses() {
+  const history = document.getElementById("history");
+  history.replaceChildren();
+
+  let total = 0;
+
+  expenses.forEach(function(expense) {
+    const amount = Number(expense.amount);
+    if (!Number.isFinite(amount) || amount < 0) return;
+
+    total += amount;
+    const item = document.createElement("li");
+    item.textContent =
+      String(expense.category) + " - ₹" +
+      amount.toFixed(2);
+    history.appendChild(item);
+  });
+
+  document.getElementById("total").textContent =
+    "₹" + total.toFixed(2);
+}
+
+showExpenses();
+</script>
+</body>
+</html>
